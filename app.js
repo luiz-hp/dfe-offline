@@ -4,7 +4,7 @@
  */
 'use strict';
 
-const VERSAO = '1.0.0';
+const VERSAO = '1.0.1';
 const $ = (id) => document.getElementById(id);
 
 // ------------------------------------------------------------------ tabelas
@@ -226,7 +226,8 @@ function lerXml(texto, nomeArquivo) {
       .filter((ch) => !idDe('infMDFe').includes(ch))
       .forEach((ch) => add(ch, 'mdfe'));
   } else {
-    [...idDe('infNFe'), ...idDe('infCte'), ...tag('chNFe'), ...tag('chCTe')].forEach((ch) => add(ch, 'xml'));
+    // Set: a mesma chave aparece em infNFe/@Id e em protNFe/chNFe — conta uma vez só
+    new Set([...idDe('infNFe'), ...idDe('infCte'), ...tag('chNFe'), ...tag('chCTe')]).forEach((ch) => ch && add(ch, 'xml'));
   }
   return { ehMdfe, novas, dups, invalidas };
 }

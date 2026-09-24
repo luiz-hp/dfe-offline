@@ -1,5 +1,5 @@
 /* Service worker: funciona offline e nunca acessa domínios externos. */
-const VERSAO = 'chave-dfe-v1.0.0';
+const VERSAO = 'chave-dfe-v1.0.1';
 const NUCLEO = [
   './', 'index.html', 'app.css', 'app.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
