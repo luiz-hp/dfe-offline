@@ -1,5 +1,5 @@
 /* Service worker: funciona offline e nunca acessa domínios externos. */
-const VERSAO = 'chave-dfe-v1.2.0';
+const VERSAO = 'chave-dfe-v1.3.0';
 const NUCLEO = [
   './', 'index.html', 'app.css', 'app.js', 'anon.js', 'danfe.js', 'manifest.webmanifest',
   'vendor/jspdf/jspdf.umd.min.js', 'vendor/jspdf/jspdf.plugin.autotable.min.js',

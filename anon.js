@@ -10,12 +10,16 @@
 
   // ------------------------------------------------------------ regras por tag
   const TAG_DOC = new Set(['CNPJ', 'CPF', 'CNPJReceb', 'CNPJPag', 'CNPJIntermed', 'CNPJCPF', 'CPFCNPJ']);
+  // CNPJ, CPF e variações (CNPJForn, CNPJPg do vale-pedágio, CNPJReceb, CPFCNPJ…)
+  const ehDoc = (n) => TAG_DOC.has(n) || /^(CNPJ|CPF)[A-Z]/.test(n);
   const TAG_NOME = new Set(['xNome', 'xFant', 'xSeg', 'xContato']);
+  // grupos em que xNome NÃO é nome de pessoa/empresa (CT-e: componente do frete, ex. "FRETE PESO")
+  const PAI_NOME_NAO_PESSOAL = new Set(['Comp']);
   // valor identificador → marcador da categoria (vinculado à entidade quando há CNPJ/CPF no mesmo grupo)
   const TAG_VALOR = {
     IE: 'IE', IEST: 'IEST', IM: 'IM', idEstrangeiro: 'IDESTR', placa: 'PLACA', RENAVAM: 'RENAVAM',
     RNTRC: 'RNTRC', RNTC: 'RNTRC', CIOT: 'CIOT', cInt: 'VEIC', nApol: 'APOLICE', nAver: 'AVERB',
-    idCadIntTran: 'INTERMED', cAut: 'AUTCARTAO', nProt: 'PROT', nRECOPI: 'RECOPI',
+    idCadIntTran: 'INTERMED', cAut: 'AUTCARTAO', nProt: 'PROT', nRECOPI: 'RECOPI', nCompra: 'VALEPED', nLacre: 'LACRE',
   };
   const TAG_ENDERECO = new Set(['xLgr', 'nro', 'xCpl', 'xBairro', 'CEP', 'fone', 'email', 'xEnder']);
   const TAG_SUPRIMIR = new Set(['cNF', 'cMDF', 'cCT', 'digVal']);
@@ -165,7 +169,8 @@
         lista.push([k.slice(k.indexOf('|') + 1), tok, true]);
       }
     }
-    return lista.sort((a, b) => b[0].length - a[0].length);
+    // maior primeiro; no empate, marcador de entidade ([EMPRESA_/[PESSOA_) antes de nome genérico ([NOME_)
+    return lista.sort((a, b) => b[0].length - a[0].length || (a[1].startsWith('[NOME_') ? 1 : 0) - (b[1].startsWith('[NOME_') ? 1 : 0));
   }
   /** Substitui um identificador conhecido só quando não está colado a outras letras/dígitos. */
   const reLiteral = (s) => new RegExp(`(?<![A-Za-z0-9])${escRe(s)}(?![A-Za-z0-9])`, 'g');
@@ -190,6 +195,29 @@
       .replace(RE.cpfNu, (m) => (cpfValido(m) ? tokDoc(m) : m));
   }
 
+  /** Nome próprio logo após expressão de contexto ("falar com Ana Souza", "motorista: João da Silva", "a/c Sr. Pedro Lima"). */
+  const RE_CONTEXTO = /(falar com|contato|motorista|condutor|respons[aá]vel|a\/c|aos cuidados de|att\.?|sr\.?|sra\.?|recebido por|entregar (?:a|para)|solicitante|vendedor|comprador|representante)(\s*[:\-]?\s+)((?:[\p{L}]+\.?\s+){1,5}[\p{L}]+)/giu;
+  const maiuscula = (p) => /^\p{Lu}/u.test(p);
+  const SIGLAS_PARADA = new Set(['CPF', 'CNPJ', 'RG', 'IE', 'CNH', 'FONE', 'TEL', 'CEL', 'WHATSAPP', 'PLACA', 'NF', 'NFE', 'CTE', 'MDFE', 'EMAIL', 'E-MAIL', 'CEP', 'MATRICULA']);
+  function nomesPorContexto(s) {
+    return s.replace(RE_CONTEXTO, (m, gatilho, sep, resto) => {
+      const pal = resto.split(/\s+/);
+      const nome = [];
+      for (const p of pal) {
+        const pl = normNome(p).replace(/[^A-Z-]/g, '');
+        if (SIGLAS_PARADA.has(pl)) break;
+        if (maiuscula(p) && !/^\[/.test(p)) nome.push(p);
+        else if (nome.length && CONECTIVOS.has(normNome(p))) nome.push(p);
+        else break;
+      }
+      while (nome.length && CONECTIVOS.has(normNome(nome[nome.length - 1]))) nome.pop();
+      const prop = nome.filter((p) => !CONECTIVOS.has(normNome(p)) && !/^(Sr|Sra)\.?$/i.test(p));
+      if (prop.length < 2) return m; // exige nome e sobrenome
+      const txtNome = nome.join(' ');
+      return gatilho + sep + tokNome(txtNome) + resto.slice(resto.indexOf(txtNome) + txtNome.length);
+    });
+  }
+
   /** Texto livre: dados conhecidos + padrões (CNPJ, CPF, e-mail, placa, telefone, CEP). */
   function limparTextoLivre(s) {
     // chaves primeiro: o CNPJ embutido nelas não pode ser trocado isoladamente
@@ -197,6 +225,7 @@
     for (const [real, tok, ehNome] of conhecidos()) {
       s = s.replace(ehNome ? regexNome(real) : reLiteral(real), tok);
     }
+    s = nomesPorContexto(s);
     return limparBasico(s)
       .replace(RE.cnpjFmt, (m) => tokDoc(m))
       .replace(RE.cpfFmt, (m) => tokDoc(m))
@@ -219,7 +248,7 @@
     // 1) entidades: cada grupo (emit, dest, transporta, condutor, prop…) com seu CNPJ/CPF
     const entDoGrupo = new Map();
     for (const el of folhas(doc)) {
-      if (TAG_DOC.has(el.localName) && el.textContent.trim()) {
+      if (ehDoc(el.localName) && el.textContent.trim()) {
         entDoGrupo.set(el.parentNode, entidade(el.textContent.trim()));
       }
     }
@@ -231,11 +260,12 @@
       const v = el.textContent;
       if (!v.trim()) continue;
       const id = entDoGrupo.get(el.parentNode);
-      if (TAG_DOC.has(n)) el.textContent = tokDoc(v);
-      else if (TAG_NOME.has(n)) el.textContent = tokNome(v, id);
+      if (ehDoc(n)) el.textContent = tokDoc(v);
+      else if (TAG_NOME.has(n) && !PAI_NOME_NAO_PESSOAL.has(el.parentNode.localName)) el.textContent = tokNome(v, id);
       else if (TAG_VALOR[n]) el.textContent = v.trim().toUpperCase() === 'ISENTO' ? v : tokValor(TAG_VALOR[n], v, id);
       else if (TAG_ENDERECO.has(n) || TAG_SUPRIMIR.has(n)) el.textContent = REMOVIDO;
       else if (TAG_TEXTO_LIVRE.has(n)) {
+        if (opc.soRegistro) continue; // 1ª passada: só campos estruturados
         el.textContent = opc.removerLivre ? REMOVIDO : limparTextoLivre(v);
         if (!opc.removerLivre) livres.push({ campo: n, texto: el.textContent });
       } else if (TAG_NUMERO.has(n) && !opc.manterNumero && el.parentNode.localName === 'ide') {
@@ -369,7 +399,7 @@
     const docs = [], erros = [];
     // 1ª passada só registra entidades e nomes de TODOS os documentos (um nome que aparece
     // no MDF-e precisa ser reconhecido no texto livre da NF-e, e vice-versa)
-    lote.forEach((x) => { try { anonimizar(x, opc); } catch { /* erro é reportado abaixo */ } });
+    lote.forEach((x) => { try { anonimizar(x, { ...opc, soRegistro: true }); } catch { /* erro é reportado abaixo */ } });
     lote.forEach((x, i) => {
       try { docs.push(anonimizar(x, opc)); } catch (e) { erros.push(`XML ${i + 1}: ${e.message}`); }
     });
@@ -429,18 +459,19 @@
       li.append(s, b);
       if (window.DanfeAnon?.suporta(d.tipo)) {
         const bp = document.createElement('button');
-        bp.className = 'btn mini prim'; bp.type = 'button'; bp.textContent = 'DANFE';
-        bp.title = 'Baixar DANFE pseudonimizado em PDF';
+        const rot = window.DanfeAnon.rotulo(d.tipo);
+        bp.className = 'btn mini prim'; bp.type = 'button'; bp.textContent = rot;
+        bp.title = `Baixar ${rot} pseudonimizado em PDF`;
         bp.addEventListener('click', async () => {
           if (!podeSair()) return;
           bp.disabled = true; bp.textContent = '…';
           try {
-            const blob = await window.DanfeAnon.gerar(d.doc);
-            baixar(blob, `danfe_doc${String(i + 1).padStart(2, '0')}_anon.pdf`, 'application/pdf');
-            toast('DANFE pseudonimizado gerado.');
+            const blob = await window.DanfeAnon.gerar(d.doc, d.tipo);
+            baixar(blob, `${rot.toLowerCase()}_doc${String(i + 1).padStart(2, '0')}_anon.pdf`, 'application/pdf');
+            toast(`${rot} pseudonimizado gerado.`);
           } catch (e) {
-            toast('Não foi possível gerar o DANFE: ' + e.message, 6000);
-          } finally { bp.disabled = false; bp.textContent = 'DANFE'; }
+            toast(`Não foi possível gerar o ${rot}: ` + e.message, 6000);
+          } finally { bp.disabled = false; bp.textContent = rot; }
         });
         li.appendChild(bp);
       }

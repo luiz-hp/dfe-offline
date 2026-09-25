@@ -16,7 +16,7 @@ Duas ferramentas num só app, sem enviar nada a servidor: **(1)** lê a chave de
 | Lista | Toque na chave para copiar. Marque "consultada", exporte em CSV (abre no Excel) ou copie todas |
 | Offline | Funciona sem internet depois do primeiro acesso. O OCR (~15 MB) é baixado só no primeiro uso |
 | **Anonimizar XML** (aba) | Pseudonimiza XMLs de NF-e, NFC-e, MDF-e e CT-e para análise em IA: CNPJ, CPF, nomes, IE, placa, RNTRC, RENAVAM, chave, protocolo, apólice e similares viram marcadores consistentes em todo o lote. Endereço, telefone e e-mail são suprimidos. Assinatura digital, QR Code e responsável técnico são removidos. Textos livres são limpos. Uma verificação final procura vazamentos antes de copiar |
-| **DANFE pseudonimizado** | Para NF-e e NFC-e, gera um PDF no leiaute do DANFE a partir do XML já anonimizado: só marcadores e dados fiscais, sem código de barras nem QR Code, com faixa e marca d'água "SEM VALOR FISCAL" |
+| **DANFE, DAMDFE e DACTE pseudonimizados** | Para NF-e/NFC-e, MDF-e e CT-e, gera um PDF no leiaute do documento auxiliar correspondente a partir do XML já anonimizado: só marcadores e dados fiscais, sem código de barras nem QR Code, com faixa e marca d'água "SEM VALOR FISCAL" |
 | Restaurar | Troca os marcadores da resposta da IA pelos dados reais, usando a tabela de-para guardada só no aparelho |
 
 ## Publicar no GitHub Pages (gratuito)
@@ -57,7 +57,7 @@ vendor/zxing/         leitor de códigos (zxing-wasm, MIT)
 vendor/tesseract/     OCR (tesseract.js, Apache-2.0; dados eng, MIT)
 vendor/jspdf/         geração do DANFE em PDF (jsPDF e jspdf-autotable, MIT)
 anon.js               anonimizador de XML
-danfe.js              DANFE pseudonimizado
+danfe.js              DANFE, DAMDFE e DACTE pseudonimizados
 ```
 
 ## Limitações conhecidas
