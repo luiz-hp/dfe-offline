@@ -1,10 +1,10 @@
-/* Leitor de Chave DF-e — processamento 100% local (sem rede).
+/* DF-e Offline — leitor de chave de acesso. Processamento 100% local (sem rede).
  * Leitura: BarcodeDetector nativo (se houver) → ZXing (WebAssembly) → OCR Tesseract (reserva, só em fotos).
  * Toda chave só é aceita se o dígito verificador (módulo 11) conferir.
  */
 'use strict';
 
-const VERSAO = '1.0.1';
+const VERSAO = '1.1.0';
 const $ = (id) => document.getElementById(id);
 
 // ------------------------------------------------------------------ tabelas

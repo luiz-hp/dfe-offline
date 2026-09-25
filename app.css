@@ -116,3 +116,39 @@ video { width: 100%; height: 100%; object-fit: contain; display: block; backgrou
 .toast button { margin-left: 8px; background: none; border: 0; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
 
 [hidden] { display: none !important; }
+
+/* ---- abas ---- */
+.abas { display: flex; max-width: 720px; margin: 0 auto; padding: 8px 16px 0; gap: 4px; }
+.abas button {
+  flex: 1; min-height: 44px; border: 1px solid var(--bd); border-bottom: 0; border-radius: 10px 10px 0 0;
+  background: transparent; color: var(--tx2); font: inherit; font-weight: 600; cursor: pointer;
+}
+.abas button[aria-selected="true"] { background: var(--card); color: var(--tx); box-shadow: inset 0 3px 0 var(--pri); }
+body.aba-anon .rodape { display: none !important; }
+body.aba-anon { padding-bottom: 16px; }
+
+/* ---- anonimizador ---- */
+.intro { font-size: .88rem; color: var(--tx2); margin: 4px 0 12px; }
+.acoes2 { grid-template-columns: 2fr 1fr; }
+.opcoes { border: 1px solid var(--bd); border-radius: 10px; margin: 12px 0 0; padding: 8px 12px; display: grid; gap: 6px; font-size: .9rem; }
+.opcoes label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.opcoes input { width: 18px; height: 18px; margin-top: 2px; flex: none; }
+.verif { border-radius: 10px; padding: 10px 12px; margin-top: 10px; font-size: .88rem; }
+.verif.ok { background: var(--ok-bg); color: var(--ok); }
+.verif.warn { background: var(--warn-bg); color: var(--warn); }
+.verif.err { background: var(--err-bg); color: var(--err); }
+.verif ul { margin: 6px 0 0; padding-left: 18px; }
+.verif p { margin: 8px 0 4px; color: var(--tx); }
+.verif blockquote { margin: 4px 0; padding: 6px 8px; background: var(--card); color: var(--tx); border-radius: 6px; font-size: .82rem; word-break: break-word; }
+.docs { padding-left: 0; list-style: none; display: grid; gap: 6px; margin: 10px 0; }
+.docs li { display: flex; gap: 8px; align-items: center; background: var(--card); border: 1px solid var(--bd); border-radius: 10px; padding: 8px 10px; font-size: .85rem; }
+.docs li span { flex: 1; min-width: 0; word-break: break-word; }
+.saida-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+textarea.saida { width: 100%; font-size: 12px; }
+.bloco { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--bd); }
+.bloco h2 { font-size: 1rem; margin: 0 0 4px; }
+details.bloco summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+.tabwrap { max-height: 280px; overflow: auto; margin-top: 8px; border: 1px solid var(--bd); border-radius: 8px; }
+.tabwrap table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.tabwrap th, .tabwrap td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--bd); word-break: break-word; }
+.tabwrap th { position: sticky; top: 0; background: var(--card); }

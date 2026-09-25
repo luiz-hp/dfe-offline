@@ -1,6 +1,6 @@
-# Leitor de Chave DF-e (PWA)
+# DF-e Offline (PWA)
 
-Lê a chave de acesso (44 dígitos) de DANFE, DAMDFE, DACTE e DANFE-NFC-e pela **câmera** ou por **fotos da galeria**, valida o **dígito verificador** e monta uma lista para consulta (ex.: e-Sefa › Consulta DF-e › Consulta por Chave).
+Duas ferramentas num só app, sem enviar nada a servidor: **(1)** lê a chave de acesso (44 dígitos) de DANFE, DAMDFE, DACTE e DANFE-NFC-e pela **câmera** ou por **fotos da galeria**, valida o **dígito verificador** e monta uma lista para consulta (ex.: e-Sefa › Consulta DF-e › Consulta por Chave); **(2)** pseudonimiza XMLs de NF-e, MDF-e e CT-e para análise em IA e restaura a resposta.
 
 **Privacidade:** todo o processamento acontece no aparelho. Não há servidor, analytics nem chamadas a domínios externos. A política de segurança (CSP) do `index.html` bloqueia qualquer conexão fora do próprio site.
 
@@ -15,12 +15,14 @@ Lê a chave de acesso (44 dígitos) de DANFE, DAMDFE, DACTE e DANFE-NFC-e pela *
 | Conferência com o MDF-e | Marca cada nota como "confere", "no MDF-e, não apresentada" ou "fora do MDF-e" |
 | Lista | Toque na chave para copiar. Marque "consultada", exporte em CSV (abre no Excel) ou copie todas |
 | Offline | Funciona sem internet depois do primeiro acesso. O OCR (~15 MB) é baixado só no primeiro uso |
+| **Anonimizar XML** (aba) | Pseudonimiza XMLs de NF-e, NFC-e, MDF-e e CT-e para análise em IA: CNPJ, CPF, nomes, IE, placa, RNTRC, RENAVAM, chave, protocolo, apólice e similares viram marcadores consistentes em todo o lote. Endereço, telefone e e-mail são suprimidos. Assinatura digital, QR Code e responsável técnico são removidos. Textos livres são limpos. Uma verificação final procura vazamentos antes de copiar |
+| Restaurar | Troca os marcadores da resposta da IA pelos dados reais, usando a tabela de-para guardada só no aparelho |
 
 ## Publicar no GitHub Pages (gratuito)
 
-1. Crie um repositório no GitHub (ex.: `chave-dfe`) e envie **todo o conteúdo desta pasta** para a raiz.
+1. Crie um repositório no GitHub (ex.: `dfe-offline`) e envie **todo o conteúdo desta pasta** para a raiz.
 2. Vá em **Settings › Pages › Build and deployment**: Source = *Deploy from a branch*, Branch = `main`, pasta `/ (root)`.
-3. Em cerca de 1 minuto, o endereço fica disponível: `https://SEU-USUARIO.github.io/chave-dfe/`.
+3. Em cerca de 1 minuto, o endereço fica disponível: `https://luiz-hp.github.io/dfe-offline/`.
 4. Compartilhe esse link com os colegas.
 
 A câmera só funciona em **HTTPS**, e o GitHub Pages já usa HTTPS. Para testar no computador, rode `python -m http.server 8000` nesta pasta e abra `http://localhost:8000`.
@@ -36,7 +38,7 @@ A câmera só funciona em **HTTPS**, e o GitHub Pages já usa HTTPS. Para testar
 ## Publicar uma nova versão
 
 1. Altere o código.
-2. Aumente a versão em **`sw.js`** (`const VERSAO = 'chave-dfe-v1.0.1'`) e em **`app.js`** (`const VERSAO`).
+2. Aumente a versão em **`sw.js`** (`const VERSAO = 'chave-dfe-v1.1.1'`; o prefixo `chave-dfe-` é interno e não deve mudar) e em **`app.js`** (`const VERSAO`).
 3. Envie ao GitHub. Os aparelhos mostram o aviso "Nova versão disponível › Atualizar".
 
 Se você não mudar a versão no `sw.js`, os aparelhos continuam usando a versão antiga guardada em cache.

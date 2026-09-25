@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:; connect-src 'self' blob: data:; img-src 'self' blob: data:; media-src 'self' blob: mediastream:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<title>Leitor de Chave DF-e</title>
-<meta name="description" content="Lê a chave de acesso de DANFE, DAMDFE e DACTE pela câmera ou por foto, valida o dígito verificador e organiza a lista para consulta. Processamento 100% local.">
+<title>DF-e Offline</title>
+<meta name="description" content="Lê a chave de acesso de DANFE, DAMDFE e DACTE e pseudonimiza XMLs de DF-e para análise em IA. Processamento 100% local, sem envio de dados.">
 <meta name="theme-color" content="#0f3d6e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Chave DF-e">
+<meta name="apple-mobile-web-app-title" content="DF-e Offline">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -20,13 +20,19 @@
   <div class="topo-in">
     <img src="icons/icon-192.png" alt="" width="32" height="32">
     <div>
-      <h1>Leitor de Chave DF-e</h1>
+      <h1>DF-e Offline</h1>
       <p class="sub" id="status">Carregando…</p>
     </div>
   </div>
 </header>
 
+<nav class="abas" role="tablist" aria-label="Funções">
+  <button id="tabChaves" role="tab" aria-selected="true" aria-controls="abaChaves" type="button">Chaves</button>
+  <button id="tabAnon" role="tab" aria-selected="false" aria-controls="abaAnon" type="button">Anonimizar XML</button>
+</nav>
+
 <main>
+<div id="abaChaves" role="tabpanel" aria-labelledby="tabChaves">
   <section class="acoes" aria-label="Captura">
     <button class="btn prim" id="btnCamera" type="button">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3v12H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
@@ -77,6 +83,66 @@
     <ol class="lista" id="lista"></ol>
     <p class="vazio" id="vazio">Nenhuma chave ainda. Use a câmera, escolha fotos da galeria ou cole a chave.</p>
   </section>
+</div>
+
+<div id="abaAnon" role="tabpanel" aria-labelledby="tabAnon" hidden>
+  <p class="intro">Gera uma versão <strong>pseudonimizada</strong> de XMLs de NF-e, NFC-e, MDF-e e CT-e para análise em IA. CNPJ, CPF, nomes, IE, placa, RNTRC, chave de acesso, protocolo e assinatura digital viram marcadores; endereço, telefone e e-mail são suprimidos. O mesmo marcador indica a mesma entidade em todos os documentos do lote.</p>
+
+  <section class="acoes acoes2" aria-label="Entrada">
+    <label class="btn prim" for="anonArquivos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13l-2 2 2 2M15 13l2 2-2 2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Abrir XML(s)
+    </label>
+    <input id="anonArquivos" type="file" accept=".xml,text/xml,application/xml" multiple hidden>
+    <button class="btn" id="anonNovoLote" type="button">Novo lote</button>
+  </section>
+
+  <form class="manual" id="anonForm" autocomplete="off">
+    <label for="anonTexto" class="lbl">ou cole o XML (botão "Copiar" do e-Sefa)</label>
+    <div class="linha">
+      <textarea id="anonTexto" rows="2" placeholder="&lt;nfeProc …"></textarea>
+      <button class="btn" type="submit">Adicionar</button>
+    </div>
+  </form>
+
+  <fieldset class="opcoes">
+    <legend class="lbl">Opções</legend>
+    <label><input type="checkbox" id="optTextoLivre"> Remover textos livres (inf. complementares) em vez de limpar</label>
+    <label><input type="checkbox" id="optNumero" checked> Manter número e série do documento</label>
+  </fieldset>
+
+  <p class="lbl" id="anonResumo" aria-live="polite"></p>
+
+  <section id="anonResultado" hidden aria-label="Resultado">
+    <div id="anonVerif" class="verif" role="status"></div>
+    <ol id="anonDocs" class="docs"></ol>
+    <div class="saida-bar">
+      <button class="btn prim" id="anonCopiar" type="button">Copiar para a IA</button>
+      <button class="btn" id="anonBaixarJson" type="button">Baixar .txt</button>
+    </div>
+    <label for="anonSaida" class="lbl">Prévia do que será enviado</label>
+    <textarea id="anonSaida" class="saida" readonly rows="10"></textarea>
+  </section>
+
+  <section class="bloco">
+    <h2>Restaurar a resposta da IA</h2>
+    <p class="lbl">Cole a resposta. Os marcadores voltam a ser os dados reais, só neste aparelho.</p>
+    <textarea id="revEntrada" class="saida" rows="4"></textarea>
+    <div class="saida-bar"><button class="btn" id="revBtn" type="button">Restaurar</button>
+      <button class="btn" id="revCopiar" type="button" hidden>Copiar texto restaurado</button></div>
+    <p class="msg" id="revMsg" role="status"></p>
+    <textarea id="revSaida" class="saida" readonly rows="8" hidden></textarea>
+  </section>
+
+  <details class="bloco" id="anonTabela">
+    <summary>Tabela de-para (<span id="anonTabN">0</span>) · fica só neste aparelho</summary>
+    <div class="tabwrap"><table><thead><tr><th>Marcador</th><th>Valor real</th></tr></thead><tbody id="anonTabCorpo"></tbody></table></div>
+    <div class="saida-bar">
+      <button class="btn" id="anonExportar" type="button">Exportar CSV</button>
+      <button class="btn perigo" id="anonZerar" type="button">Apagar tabela</button>
+    </div>
+  </details>
+</div>
 </main>
 
 <footer class="rodape" id="rodape" hidden>
@@ -93,5 +159,6 @@
 
 <script src="vendor/zxing/zxing-reader.js"></script>
 <script src="app.js"></script>
+<script src="anon.js"></script>
 </body>
 </html>
