@@ -1,7 +1,8 @@
 /* Service worker: funciona offline e nunca acessa domínios externos. */
-const VERSAO = 'chave-dfe-v1.1.0';
+const VERSAO = 'chave-dfe-v1.2.0';
 const NUCLEO = [
-  './', 'index.html', 'app.css', 'app.js', 'anon.js', 'manifest.webmanifest',
+  './', 'index.html', 'app.css', 'app.js', 'anon.js', 'danfe.js', 'manifest.webmanifest',
+  'vendor/jspdf/jspdf.umd.min.js', 'vendor/jspdf/jspdf.plugin.autotable.min.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
   'vendor/zxing/zxing-reader.js', 'vendor/zxing/zxing_reader.wasm',
 ];

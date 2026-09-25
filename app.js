@@ -4,7 +4,7 @@
  */
 'use strict';
 
-const VERSAO = '1.1.0';
+const VERSAO = '1.2.0';
 const $ = (id) => document.getElementById(id);
 
 // ------------------------------------------------------------------ tabelas

@@ -427,6 +427,23 @@
       b.addEventListener('click', () => baixar(new XMLSerializer().serializeToString(d.doc),
         `doc${String(i + 1).padStart(2, '0')}_${d.tipo}_anon.xml`, 'application/xml'));
       li.append(s, b);
+      if (window.DanfeAnon?.suporta(d.tipo)) {
+        const bp = document.createElement('button');
+        bp.className = 'btn mini prim'; bp.type = 'button'; bp.textContent = 'DANFE';
+        bp.title = 'Baixar DANFE pseudonimizado em PDF';
+        bp.addEventListener('click', async () => {
+          if (!podeSair()) return;
+          bp.disabled = true; bp.textContent = '…';
+          try {
+            const blob = await window.DanfeAnon.gerar(d.doc);
+            baixar(blob, `danfe_doc${String(i + 1).padStart(2, '0')}_anon.pdf`, 'application/pdf');
+            toast('DANFE pseudonimizado gerado.');
+          } catch (e) {
+            toast('Não foi possível gerar o DANFE: ' + e.message, 6000);
+          } finally { bp.disabled = false; bp.textContent = 'DANFE'; }
+        });
+        li.appendChild(bp);
+      }
       lista.appendChild(li);
     });
     $('anonResumo').textContent = `${docs.length} documento(s) no lote`;
@@ -446,7 +463,8 @@
   }
 
   function baixar(conteudo, nome, tipo) {
-    const url = URL.createObjectURL(new Blob([conteudo], { type: tipo + ';charset=utf-8' }));
+    const blob = conteudo instanceof Blob ? conteudo : new Blob([conteudo], { type: tipo + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = nome;
     document.body.appendChild(a); a.click(); a.remove();

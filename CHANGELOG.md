@@ -1,5 +1,8 @@
 # Histórico de versões
 
+## 1.2.0
+- Botão **DANFE** na aba Anonimizar: gera, no aparelho, um PDF no leiaute do DANFE a partir do XML já pseudonimizado (NF-e e NFC-e), com várias folhas quando necessário, sem código de barras/QR Code e com marca d'água "SEM VALOR FISCAL".
+
 ## 1.1.0
 - App renomeado para **DF-e Offline**.
 - Nova aba **Anonimizar XML**: pseudonimização local de NF-e, NFC-e, MDF-e e CT-e com marcadores consistentes em todo o lote, verificação automática de vazamentos, prévia dos textos livres, tabela de-para local e restauração da resposta da IA.
